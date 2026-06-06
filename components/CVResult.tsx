@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, createElement } from "react";
+import { useRef, useState, useCallback } from "react";
 import { CVData } from "@/types/cv";
 import { THEMES, CATEGORIES, Theme, Layout, Sep, Cat, TC } from "@/lib/themes";
 
@@ -745,6 +745,53 @@ function LayoutTimeline({ cv, photo, onPhotoClick, theme, lang }: LP) {
   );
 }
 
+/* ─── HTML entity cleaner ────────────────────────────────────────────────── */
+
+function cleanText(s: string): string {
+  return s
+    .replace(/&#39;/g,  "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g,  "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g,   "<")
+    .replace(/&gt;/g,   ">")
+    .replace(/&nbsp;/g, " ");
+}
+
+function cleanCV(cv: CVData): CVData {
+  const c = (s: string) => cleanText(s);
+  const co = (s?: string) => s !== undefined ? cleanText(s) : s;
+  return {
+    ...cv,
+    nom:               c(cv.nom),
+    prenom:            c(cv.prenom),
+    email:             c(cv.email),
+    telephone:         c(cv.telephone),
+    ville:             c(cv.ville),
+    titre:             c(cv.titre),
+    resume:            c(cv.resume),
+    nationalite:       co(cv.nationalite),
+    situationFamiliale:co(cv.situationFamiliale),
+    linkedin:          co(cv.linkedin),
+    portfolio:         co(cv.portfolio),
+    disponibilite:     co(cv.disponibilite),
+    mobilite:          co(cv.mobilite),
+    competences: cv.competences.map(cleanText),
+    experiences: cv.experiences.map(e => ({
+      ...e,
+      poste:       c(e.poste),
+      entreprise:  c(e.entreprise),
+      description: c(e.description),
+    })),
+    formations: cv.formations.map(f => ({
+      ...f,
+      diplome:       c(f.diplome),
+      etablissement: c(f.etablissement),
+      description:   c(f.description),
+    })),
+  };
+}
+
 /* ─── Layout Map ─────────────────────────────────────────────────────────── */
 
 const LAYOUT_MAP: Record<Layout, React.FC<LP>> = {
@@ -779,38 +826,19 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
     reader.readAsDataURL(file);
   };
 
-  const [isPdfLoading,  setIsPdfLoading]  = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translatedCV,  setTranslatedCV]  = useState<CVData | null>(null);
   const [isEnglish,     setIsEnglish]     = useState(false);
 
-  const downloadPDF = useCallback(async () => {
-    setIsPdfLoading(true);
-    try {
-      const [{ pdf }, { CVPdfDocument }] = await Promise.all([
-        import("@react-pdf/renderer"),
-        import("./CVPdf"),
-      ]);
-      // Compute the displayed CV (same logic as displayCV below) inside the callback
-      // to avoid referencing a const declared later in the component body
-      const currentCV = (isEnglish && translatedCV) ? translatedCV : cv;
-      const lang: "en" | "fr" = isEnglish ? "en" : "fr";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const blob = await pdf(
-        createElement(CVPdfDocument, { cv: currentCV, photo, theme: activeTheme, lang }) as any
-      ).toBlob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${currentCV.prenom || "mon"}-cv.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } finally {
-      setIsPdfLoading(false);
-    }
-  }, [cv, translatedCV, isEnglish, photo, activeTheme]);
+  const printCV = useCallback(() => {
+    const cleanup = () => {
+      document.body.classList.remove("printing");
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    document.body.classList.add("printing");
+    window.print();
+  }, []);
 
   const translateCV = useCallback(async () => {
     if (translatedCV) { setIsEnglish(true); return; }
@@ -832,7 +860,7 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
     }
   }, [cv, translatedCV]);
 
-  const displayCV = (isEnglish && translatedCV) ? translatedCV : cv;
+  const displayCV = cleanCV((isEnglish && translatedCV) ? translatedCV : cv);
   const ActiveLayout = LAYOUT_MAP[activeTheme.layout];
 
   return (
@@ -884,25 +912,13 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
 
         {/* PDF button — pushed right */}
         <div className="ml-auto">
-          <button type="button" onClick={downloadPDF} disabled={isPdfLoading}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.03] hover:opacity-90 disabled:opacity-60 disabled:cursor-wait disabled:scale-100"
+          <button type="button" onClick={printCV}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.03] hover:opacity-90"
             style={{ background:"linear-gradient(135deg,#6366f1,#a855f7)" }}>
-            {isPdfLoading ? (
-              <>
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" style={{ opacity:0.25 }} />
-                  <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" style={{ opacity:0.75 }} />
-                </svg>
-                Génération…
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h4a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                </svg>
-                Télécharger PDF
-              </>
-            )}
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h4a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            </svg>
+            Télécharger PDF
           </button>
         </div>
       </div>
@@ -967,7 +983,9 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
 
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
       <div id="cv-print-zone">
-        <ActiveLayout cv={displayCV} photo={photo} onPhotoClick={() => fileRef.current?.click()} theme={activeTheme} lang={isEnglish ? "en" : "fr"} />
+        <div id="cv-preview">
+          <ActiveLayout cv={displayCV} photo={photo} onPhotoClick={() => fileRef.current?.click()} theme={activeTheme} lang={isEnglish ? "en" : "fr"} />
+        </div>
       </div>
     </div>
   );

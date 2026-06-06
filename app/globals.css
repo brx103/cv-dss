@@ -69,64 +69,70 @@ body {
 .glow-pulse     { animation: pulse-glow 3s ease-in-out infinite; }
 
 /* ── Print / PDF ─────────────────────────────────────────────────────────── */
+.no-print { /* hidden by JS-triggered print, see below */ }
+
 @media print {
-  .no-print { display: none !important; }
   @page {
     size: A4 portrait;
     margin: 0;
   }
 
-  /* Force colors on every element — backgrounds, gradients, shadows */
+  /* Force all colors — backgrounds, gradients, etc. */
   *, *::before, *::after {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
 
-  html, body {
+  /* ── Triggered via our print button (body.printing) ── */
+  body.printing {
     margin: 0 !important;
     padding: 0 !important;
-    width: 210mm !important;
     background: white !important;
   }
 
-  /* Hide everything in place (visibility keeps layout but makes it invisible) */
-  body * {
+  /* Hide everything */
+  body.printing * {
     visibility: hidden !important;
   }
 
-  /* Reveal only the CV and all its descendants */
-  #cv-print-zone,
-  #cv-print-zone * {
+  /* Show only the CV preview and all its children */
+  body.printing #cv-preview,
+  body.printing #cv-preview * {
     visibility: visible !important;
   }
 
-  /* Anchor the CV at the exact top-left corner of the printed page.
-     position:fixed in print = relative to the page, not the scroll position. */
-  #cv-print-zone {
+  /* Position CV at exact top-left of A4 page */
+  body.printing #cv-preview {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    right: 0 !important;
     width: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    background: white !important;
     z-index: 9999 !important;
     overflow: visible !important;
+    background: white !important;
   }
 
-  /* Strip decorative box-shadows inside the CV */
-  #cv-print-zone [class*="shadow"] {
-    box-shadow: none !important;
-  }
-
-  /* Remove outer rounded corners that would show a white border on the page */
-  #cv-print-zone > * {
+  /* Strip decorative styles from the layout root element */
+  body.printing #cv-preview > * {
     border-radius: 0 !important;
     box-shadow: none !important;
     margin: 0 !important;
+    border: none !important;
+  }
+
+  /* Strip shadows everywhere inside the CV */
+  body.printing #cv-preview [class*="shadow"] {
+    box-shadow: none !important;
+  }
+
+  /* Hide donation banner and other no-print elements */
+  body.printing .no-print {
+    display: none !important;
   }
 }
