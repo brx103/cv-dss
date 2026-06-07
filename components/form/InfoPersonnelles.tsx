@@ -109,13 +109,13 @@ const NATIONALITES = [
 
 // ── Input classes ────────────────────────────────────────────────────────────
 const inputClass =
-  "w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all placeholder:text-gray-300 bg-white";
+  "w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all placeholder:text-gray-300 bg-white opacity-100";
 
 const selectClass =
-  "w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all bg-white text-gray-700 appearance-none";
+  "w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all bg-white opacity-100 appearance-none";
 
 const textareaClass =
-  "w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all placeholder:text-gray-300 resize-none bg-white";
+  "w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all placeholder:text-gray-300 resize-none bg-white opacity-100";
 
 // ── City autocomplete ────────────────────────────────────────────────────────
 function CityAutocomplete({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
@@ -125,9 +125,9 @@ function CityAutocomplete({ value, onChange, placeholder }: { value: string; onC
   const filtered = value.trim() ? VILLES.filter((s) => s.toLowerCase().includes(value.toLowerCase())).slice(0, 8) : [];
 
   useEffect(() => {
-    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setHi(-1); } };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
+    const fn = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setHi(-1); } };
+    document.addEventListener("pointerdown", fn);
+    return () => document.removeEventListener("pointerdown", fn);
   }, []);
 
   const select = (v: string) => { onChange(v); setOpen(false); setHi(-1); };
@@ -149,12 +149,12 @@ function CityAutocomplete({ value, onChange, placeholder }: { value: string; onC
         }}
       />
       {open && filtered.length > 0 && (
-        <ul className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden max-h-52 overflow-y-auto">
+        <ul className="absolute z-[200] left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden max-h-52 overflow-y-auto">
           {filtered.map((item, i) => {
             const idx = item.toLowerCase().indexOf(value.toLowerCase());
             return (
-              <li key={item} onMouseDown={() => select(item)} onMouseEnter={() => setHi(i)}
-                className={`px-4 py-2.5 text-sm cursor-pointer ${i === hi ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-50"}`}>
+              <li key={item} onPointerDown={(e) => { e.preventDefault(); select(item); }} onMouseEnter={() => setHi(i)}
+                className={`flex items-center px-4 py-3 min-h-[44px] text-sm cursor-pointer ${i === hi ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-50"}`}>
                 {idx === -1 ? item : <>{item.slice(0, idx)}<span className="font-semibold text-indigo-600">{item.slice(idx, idx + value.length)}</span>{item.slice(idx + value.length)}</>}
               </li>
             );
@@ -173,9 +173,9 @@ function JobAutocomplete({ value, onChange, placeholder }: { value: string; onCh
   const filtered = value.trim() ? METIERS.filter((m) => m.label.toLowerCase().includes(value.toLowerCase())).slice(0, 10) : [];
 
   useEffect(() => {
-    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setHi(-1); } };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
+    const fn = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setHi(-1); } };
+    document.addEventListener("pointerdown", fn);
+    return () => document.removeEventListener("pointerdown", fn);
   }, []);
 
   const select = (v: string) => { onChange(v); setOpen(false); setHi(-1); };
@@ -197,13 +197,13 @@ function JobAutocomplete({ value, onChange, placeholder }: { value: string; onCh
         }}
       />
       {open && filtered.length > 0 && (
-        <ul className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+        <ul className="absolute z-[200] left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
           {filtered.map((item, i) => {
             const idx = item.label.toLowerCase().indexOf(value.toLowerCase());
             const cc = CATEGORY_COLORS[item.category] ?? "bg-gray-100 text-gray-500";
             return (
-              <li key={item.label} onMouseDown={() => select(item.label)} onMouseEnter={() => setHi(i)}
-                className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer gap-3 ${i === hi ? "bg-indigo-50" : "hover:bg-gray-50"}`}>
+              <li key={item.label} onPointerDown={(e) => { e.preventDefault(); select(item.label); }} onMouseEnter={() => setHi(i)}
+                className={`flex items-center justify-between px-4 py-3 min-h-[44px] text-sm cursor-pointer gap-3 ${i === hi ? "bg-indigo-50" : "hover:bg-gray-50"}`}>
                 <span className={i === hi ? "text-indigo-700 font-medium" : "text-gray-700"}>
                   {idx === -1 ? item.label : <>{item.label.slice(0, idx)}<span className="font-semibold text-indigo-600">{item.label.slice(idx, idx + value.length)}</span>{item.label.slice(idx + value.length)}</>}
                 </span>

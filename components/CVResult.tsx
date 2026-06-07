@@ -140,8 +140,8 @@ function LayoutSidebar({ cv, photo, onPhotoClick, theme, lang }: LP) {
   const { c, sep } = theme;
   const l = LANG[lang];
   return (
-    <div className="flex rounded-2xl overflow-hidden shadow-2xl min-h-[680px]" style={{ border:`1px solid ${c.border}` }}>
-      <div className="w-56 flex-shrink-0 flex flex-col p-7 gap-6" style={{ background: c.sidebar }}>
+    <div className="flex flex-col sm:flex-row print:flex-row rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}` }}>
+      <div className="w-full sm:w-56 print:w-56 flex-shrink-0 flex flex-col p-5 sm:p-7 gap-5 sm:gap-6" style={{ background: c.sidebar }}>
         <div className="flex flex-col items-center gap-2 pt-1">
           <PhotoButton photo={photo} onClick={onPhotoClick} size="w-24 h-24" border={`3px solid ${c.accent}50`} placeholder="rgba(255,255,255,0.2)" />
           {!photo && <p className="text-[10px] text-center" style={{ color: c.sidebarSub }}>{l.addPhoto}</p>}
@@ -176,9 +176,9 @@ function LayoutSidebar({ cv, photo, onPhotoClick, theme, lang }: LP) {
           </div>
         )}
       </div>
-      <div className="flex-1 px-9 py-8 flex flex-col gap-5" style={{ background:c.bg }}>
+      <div className="flex-1 px-5 py-5 sm:px-9 sm:py-8 flex flex-col gap-5" style={{ background:c.bg }}>
         <div className="pb-4">
-          <h2 className="text-[2rem] font-black leading-tight" style={{ color:c.text }}>
+          <h2 className="text-[1.5rem] sm:text-[2rem] print:text-[2rem] font-black leading-tight" style={{ color:c.text }}>
             {cv.prenom} <span className="font-light" style={{ color:c.accent }}>{cv.nom}</span>
           </h2>
           {cv.titre && <p className="text-sm font-semibold mt-1 tracking-wide" style={{ color:c.accent }}>{cv.titre}</p>}
@@ -237,14 +237,14 @@ function LayoutHeader({ cv, photo, onPhotoClick, theme, lang }: LP) {
   const { c, sep } = theme;
   const l = LANG[lang];
   return (
-    <div className="rounded-2xl overflow-hidden shadow-2xl min-h-[680px]" style={{ border:`1px solid ${c.border}` }}>
-      <div className="px-10 py-8 flex items-center gap-8" style={{ background:c.sidebar }}>
+    <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}` }}>
+      <div className="px-5 py-5 sm:px-10 sm:py-8 flex flex-wrap items-center gap-5 sm:gap-8" style={{ background:c.sidebar }}>
         <div className="relative flex-shrink-0">
           <div className="absolute rounded-full pointer-events-none" style={{ inset:"-4px", border:`2px solid ${c.accent}`, opacity:0.4 }} />
           <PhotoButton photo={photo} onClick={onPhotoClick} size="w-28 h-28" border={`2.5px solid ${c.accent}`} placeholder="rgba(255,255,255,0.2)" />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-[2.4rem] font-black leading-none tracking-tight" style={{ color:c.sidebarText }}>
+          <h2 className="text-[1.6rem] sm:text-[2.4rem] print:text-[2.4rem] font-black leading-none tracking-tight" style={{ color:c.sidebarText }}>
             {cv.prenom} <span className="font-thin" style={{ color:c.accent }}>{cv.nom.toUpperCase()}</span>
           </h2>
           {cv.titre && <p className="text-sm italic mt-2 font-medium" style={{ color:c.accent }}>{cv.titre}</p>}
@@ -261,8 +261,8 @@ function LayoutHeader({ cv, photo, onPhotoClick, theme, lang }: LP) {
           </div>
         </div>
       </div>
-      <div className="flex min-h-[460px]" style={{ background:c.bg }}>
-        <div className="w-60 flex-shrink-0 px-7 py-7 flex flex-col gap-7" style={{ borderRight:`1px solid ${c.border}` }}>
+      <div className="flex flex-col sm:flex-row print:flex-row" style={{ background:c.bg }}>
+        <div className="w-full sm:w-60 print:w-60 flex-shrink-0 px-5 py-5 sm:px-7 sm:py-7 flex flex-col gap-5 sm:gap-7" style={{ borderRight:`1px solid ${c.border}` }}>
           {(cv.competences??[]).length>0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -295,7 +295,7 @@ function LayoutHeader({ cv, photo, onPhotoClick, theme, lang }: LP) {
             </div>
           )}
         </div>
-        <div className="flex-1 px-8 py-7 flex flex-col gap-6">
+        <div className="flex-1 px-5 py-5 sm:px-8 sm:py-7 flex flex-col gap-5 sm:gap-6">
           {cv.resume && (
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -345,15 +345,15 @@ function LayoutGeometric({ cv, photo, onPhotoClick, theme, lang }: LP) {
   const l = LANG[lang];
   return (
     <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}`, background:c.bg }}>
-      <div className="relative overflow-hidden px-10 pt-8 pb-5" style={{ background:c.sidebar }}>
+      <div className="relative overflow-hidden px-5 sm:px-10 pt-5 sm:pt-8 pb-4 sm:pb-5" style={{ background:c.sidebar }}>
         <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full pointer-events-none" style={{ background:`${c.accent}15` }} />
         <div className="absolute top-6 right-20 w-32 h-32 rounded-full pointer-events-none" style={{ background:`${c.accent}10` }} />
         <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full pointer-events-none" style={{ background:`${c.accent}10` }} />
         <div className="relative flex items-end justify-between gap-6 z-10">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.4em] mb-2" style={{ color:c.accent }}>{l.cv}</p>
-            <h2 className="text-[3.2rem] font-black leading-none tracking-tight" style={{ color:c.sidebarText }}>{cv.prenom}</h2>
-            <h2 className="text-[3.2rem] font-thin leading-none tracking-widest -mt-1" style={{ color:c.accent }}>{cv.nom.toUpperCase()}</h2>
+            <h2 className="text-[2rem] sm:text-[3.2rem] print:text-[3.2rem] font-black leading-none tracking-tight" style={{ color:c.sidebarText }}>{cv.prenom}</h2>
+            <h2 className="text-[2rem] sm:text-[3.2rem] print:text-[3.2rem] font-thin leading-none tracking-widest -mt-1" style={{ color:c.accent }}>{cv.nom.toUpperCase()}</h2>
             {cv.titre && <p className="text-sm italic font-medium mt-2" style={{ color:`${c.sidebarText}80` }}>{cv.titre}</p>}
             <div className="mt-3 h-[3px] w-10 rounded-full" style={{ background:c.accent }} />
           </div>
@@ -374,8 +374,8 @@ function LayoutGeometric({ cv, photo, onPhotoClick, theme, lang }: LP) {
           ))}
         </div>
       </div>
-      <div className="flex min-h-[420px]" style={{ borderTop:`1px solid ${c.border}` }}>
-        <div className="w-56 flex-shrink-0 px-7 py-7 flex flex-col gap-6" style={{ borderRight:`1px solid ${c.border}` }}>
+      <div className="flex flex-col sm:flex-row print:flex-row" style={{ borderTop:`1px solid ${c.border}` }}>
+        <div className="w-full sm:w-56 print:w-56 flex-shrink-0 px-5 py-5 sm:px-7 sm:py-7 flex flex-col gap-5 sm:gap-6" style={{ borderRight:`1px solid ${c.border}` }}>
           {(cv.competences??[]).length>0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -408,7 +408,7 @@ function LayoutGeometric({ cv, photo, onPhotoClick, theme, lang }: LP) {
             </div>
           )}
         </div>
-        <div className="flex-1 px-8 py-7 flex flex-col gap-6">
+        <div className="flex-1 px-5 py-5 sm:px-8 sm:py-7 flex flex-col gap-5 sm:gap-6">
           {cv.resume && (
             <section>
               <div className="flex items-center gap-2 mb-3">
@@ -453,11 +453,11 @@ function LayoutMinimal({ cv, photo, onPhotoClick, theme, lang }: LP) {
   const l = LANG[lang];
   return (
     <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}`, background:c.bg }}>
-      <div className="max-w-2xl mx-auto px-12 py-10">
+      <div className="max-w-2xl mx-auto px-5 sm:px-12 py-6 sm:py-10">
         <div className="flex items-start justify-between gap-6 mb-7">
           <div>
-            <h2 className="text-[2.6rem] font-thin leading-none tracking-widest" style={{ color:c.text }}>{cv.prenom.toUpperCase()}</h2>
-            <h2 className="text-[2.6rem] font-black leading-none tracking-tight -mt-1" style={{ color:c.text }}>{cv.nom.toUpperCase()}</h2>
+            <h2 className="text-[1.7rem] sm:text-[2.6rem] print:text-[2.6rem] font-thin leading-none tracking-widest" style={{ color:c.text }}>{cv.prenom.toUpperCase()}</h2>
+            <h2 className="text-[1.7rem] sm:text-[2.6rem] print:text-[2.6rem] font-black leading-none tracking-tight -mt-1" style={{ color:c.text }}>{cv.nom.toUpperCase()}</h2>
             {cv.titre && <p className="text-xs italic mt-3 tracking-wider" style={{ color:c.sub }}>{cv.titre}</p>}
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4">
               {cv.email && <span className="text-[11px]" style={{ color:c.sub }}>{cv.email}</span>}
@@ -493,7 +493,7 @@ function LayoutMinimal({ cv, photo, onPhotoClick, theme, lang }: LP) {
             </div>
             <div className="space-y-5">
               {cv.experiences.map(exp=>(
-                <div key={exp.id} className="grid grid-cols-[7rem_1fr] gap-4">
+                <div key={exp.id} className="grid grid-cols-1 sm:grid-cols-[7rem_1fr] print:grid-cols-[7rem_1fr] gap-3 sm:gap-4">
                   <div className="text-right pt-0.5">
                     <p className="text-[10px] leading-snug" style={{ color:c.sub }}>{formatPeriod(exp.dateDebut,exp.dateFin)}</p>
                   </div>
@@ -515,7 +515,7 @@ function LayoutMinimal({ cv, photo, onPhotoClick, theme, lang }: LP) {
             </div>
             <div className="space-y-4">
               {cv.formations.map(f=>(
-                <div key={f.id} className="grid grid-cols-[7rem_1fr] gap-4">
+                <div key={f.id} className="grid grid-cols-1 sm:grid-cols-[7rem_1fr] print:grid-cols-[7rem_1fr] gap-3 sm:gap-4">
                   <div className="text-right pt-0.5">
                     {f.annee && <p className="text-[10px]" style={{ color:c.sub }}>{f.annee}</p>}
                   </div>
@@ -551,10 +551,10 @@ function LayoutStrip({ cv, photo, onPhotoClick, theme, lang }: LP) {
   return (
     <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}`, background:c.bg }}>
       <div className="h-2" style={{ background:c.sidebar }} />
-      <div className="px-10 pt-7 pb-5" style={{ background:c.bg }}>
+      <div className="px-5 sm:px-10 pt-5 sm:pt-7 pb-4 sm:pb-5" style={{ background:c.bg }}>
         <div className="flex items-center justify-between gap-6 mb-3">
           <div className="flex-1">
-            <h2 className="text-[2.4rem] font-black leading-none" style={{ color:c.text }}>
+            <h2 className="text-[1.6rem] sm:text-[2.4rem] print:text-[2.4rem] font-black leading-none" style={{ color:c.text }}>
               {cv.prenom} <span className="font-light" style={{ color:c.accent }}>{cv.nom}</span>
             </h2>
             {cv.titre && <p className="text-sm font-semibold mt-1.5 tracking-wide" style={{ color:c.accent }}>{cv.titre}</p>}
@@ -573,7 +573,7 @@ function LayoutStrip({ cv, photo, onPhotoClick, theme, lang }: LP) {
         </div>
         <div className="mt-4"><SepLine type={sep} color={c.border} /></div>
       </div>
-      <div className="px-10 pb-8 flex gap-8">
+      <div className="px-5 sm:px-10 pb-6 sm:pb-8 flex flex-col sm:flex-row print:flex-row gap-5 sm:gap-8">
         <div className="flex-1 flex flex-col gap-5">
           {cv.resume && (
             <section>
@@ -626,7 +626,7 @@ function LayoutStrip({ cv, photo, onPhotoClick, theme, lang }: LP) {
           )}
         </div>
         {(cv.competences??[]).length>0 && (
-          <div className="w-44 flex-shrink-0">
+          <div className="w-full sm:w-44 print:w-44 flex-shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-4 rounded-sm flex-shrink-0" style={{ background:c.accent }} />
               <h4 className="text-[9px] font-black uppercase tracking-[0.28em]" style={{ color:c.text }}>{l.competences}</h4>
@@ -649,11 +649,11 @@ function LayoutTimeline({ cv, photo, onPhotoClick, theme, lang }: LP) {
   const { c, sep } = theme;
   const l = LANG[lang];
   return (
-    <div className="rounded-2xl overflow-hidden shadow-2xl min-h-[680px]" style={{ border:`1px solid ${c.border}` }}>
-      <div className="px-10 py-7 flex items-center gap-7" style={{ background:c.sidebar }}>
+    <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}` }}>
+      <div className="px-5 sm:px-10 py-5 sm:py-7 flex flex-wrap items-center gap-5 sm:gap-7" style={{ background:c.sidebar }}>
         <PhotoButton photo={photo} onClick={onPhotoClick} size="w-24 h-24" border={`2px solid ${c.accent}`} placeholder="rgba(255,255,255,0.2)" />
         <div className="flex-1">
-          <h2 className="text-[2.2rem] font-black leading-none" style={{ color:c.sidebarText }}>
+          <h2 className="text-[1.5rem] sm:text-[2.2rem] print:text-[2.2rem] font-black leading-none" style={{ color:c.sidebarText }}>
             {cv.prenom} <span className="font-thin" style={{ color:c.accent }}>{cv.nom}</span>
           </h2>
           {cv.titre && <p className="text-sm mt-1.5 font-medium" style={{ color:`${c.accent}cc` }}>{cv.titre}</p>}
@@ -674,7 +674,7 @@ function LayoutTimeline({ cv, photo, onPhotoClick, theme, lang }: LP) {
           </div>
         )}
       </div>
-      <div className="p-8 flex gap-8" style={{ background:c.bg }}>
+      <div className="p-5 sm:p-8 flex flex-col sm:flex-row print:flex-row gap-5 sm:gap-8" style={{ background:c.bg }}>
         <div className="flex-1 flex flex-col gap-6">
           {cv.resume && (
             <section>
@@ -711,7 +711,7 @@ function LayoutTimeline({ cv, photo, onPhotoClick, theme, lang }: LP) {
           )}
         </div>
         {cv.formations.length>0 && (
-          <div className="w-52 flex-shrink-0 flex flex-col gap-4">
+          <div className="w-full sm:w-52 print:w-52 flex-shrink-0 flex flex-col gap-4">
             <div className="flex items-center gap-3 mb-1">
               <span className="text-[9px] font-black uppercase tracking-[0.35em]" style={{ color:c.accent }}>{l.formation}</span>
               <div className="flex-1 h-px" style={{ background:c.border }} />
@@ -982,7 +982,7 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
       </a>
 
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
-      <div id="cv-print-zone">
+      <div id="cv-print-zone" className="overflow-x-hidden">
         <div id="cv-preview">
           <ActiveLayout cv={displayCV} photo={photo} onPhotoClick={() => fileRef.current?.click()} theme={activeTheme} lang={isEnglish ? "en" : "fr"} />
         </div>

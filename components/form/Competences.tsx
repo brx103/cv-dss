@@ -406,7 +406,7 @@ export default function Competences({ data, onChange }: Props) {
             onFocus={() => { if (filtered.length > 0) setOpen(true); }}
             onKeyDown={handleKeyDown}
             placeholder="Excel, Permis B, HACCP, Travail en équipe..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all placeholder:text-gray-300 bg-white"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-400 shadow-sm hover:border-indigo-200 transition-all placeholder:text-gray-300 bg-white opacity-100"
           />
 
           {/* Dropdown */}
