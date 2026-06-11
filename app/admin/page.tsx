@@ -67,7 +67,9 @@ export default function AdminPage() {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (!session || session.user.email !== ADMIN_EMAIL) {
+      console.log("User email:", session?.user?.email);
+
+      if (session?.user?.email !== ADMIN_EMAIL) {
         router.replace("/");
         return;
       }
