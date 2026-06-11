@@ -561,14 +561,17 @@ export default function HomePage() {
     }
 
     // Fetch community CV count
-    supabase.from("stats").select("value").eq("key", "cv_generated").single()
-      .then(({ data }) => { if (data) setCvCount(data.value as number); })
-      .catch(() => {});
+    (async () => {
+      try {
+        const { data } = await supabase.from("stats").select("value").eq("key", "cv_generated").single();
+        if (data) setCvCount(data.value as number);
+      } catch {}
+    })();
 
     // Track page visit (once per session)
     if (!sessionStorage.getItem("visit_tracked")) {
       sessionStorage.setItem("visit_tracked", "1");
-      supabase.from("page_views").insert({}).catch(() => {});
+      (async () => { try { await supabase.from("page_views").insert({}); } catch {} })();
     }
 
     return () => { try { subscription?.unsubscribe(); } catch {} };
