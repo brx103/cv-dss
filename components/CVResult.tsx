@@ -141,7 +141,7 @@ function LayoutSidebar({ cv, photo, onPhotoClick, theme, lang }: LP) {
   const { c, sep } = theme;
   const l = LANG[lang];
   return (
-    <div className="flex flex-col sm:flex-row print:flex-row rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}` }}>
+    <div className="flex flex-col sm:flex-row print:flex-row items-start rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}`, background:c.bg }}>
       <div className="w-full sm:w-56 print:w-56 flex-shrink-0 flex flex-col p-5 sm:p-7 gap-5 sm:gap-6" style={{ background: c.sidebar }}>
         <div className="flex flex-col items-center gap-2 pt-1">
           <PhotoButton photo={photo} onClick={onPhotoClick} size="w-24 h-24" border={`3px solid ${c.accent}50`} />
@@ -261,7 +261,7 @@ function LayoutHeader({ cv, photo, onPhotoClick, theme, lang }: LP) {
           </div>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row print:flex-row" style={{ background:c.bg }}>
+      <div className="flex flex-col sm:flex-row print:flex-row items-start" style={{ background:c.bg }}>
         <div className="w-full sm:w-60 print:w-60 flex-shrink-0 px-5 py-5 sm:px-7 sm:py-7 flex flex-col gap-5 sm:gap-7" style={{ borderRight:`1px solid ${c.border}` }}>
           {(cv.competences??[]).length>0 && (
             <div>
@@ -374,7 +374,7 @@ function LayoutGeometric({ cv, photo, onPhotoClick, theme, lang }: LP) {
           ))}
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row print:flex-row" style={{ borderTop:`1px solid ${c.border}` }}>
+      <div className="flex flex-col sm:flex-row print:flex-row items-start" style={{ borderTop:`1px solid ${c.border}` }}>
         <div className="w-full sm:w-56 print:w-56 flex-shrink-0 px-5 py-5 sm:px-7 sm:py-7 flex flex-col gap-5 sm:gap-6" style={{ borderRight:`1px solid ${c.border}` }}>
           {(cv.competences??[]).length>0 && (
             <div>
@@ -573,7 +573,7 @@ function LayoutStrip({ cv, photo, onPhotoClick, theme, lang }: LP) {
         </div>
         <div className="mt-4"><SepLine type={sep} color={c.border} /></div>
       </div>
-      <div className="px-5 sm:px-10 pb-6 sm:pb-8 flex flex-col sm:flex-row print:flex-row gap-5 sm:gap-8">
+      <div className="px-5 sm:px-10 pb-6 sm:pb-8 flex flex-col sm:flex-row print:flex-row items-start gap-5 sm:gap-8">
         <div className="flex-1 flex flex-col gap-5">
           {cv.resume && (
             <section>
@@ -674,7 +674,7 @@ function LayoutTimeline({ cv, photo, onPhotoClick, theme, lang }: LP) {
           </div>
         )}
       </div>
-      <div className="p-5 sm:p-8 flex flex-col sm:flex-row print:flex-row gap-5 sm:gap-8" style={{ background:c.bg }}>
+      <div className="p-5 sm:p-8 flex flex-col sm:flex-row print:flex-row items-start gap-5 sm:gap-8" style={{ background:c.bg }}>
         <div className="flex-1 flex flex-col gap-6">
           {cv.resume && (
             <section>
@@ -1060,7 +1060,7 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
 
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
       <div className="overflow-x-hidden">
-        <div id="cv-preview" style={{ height: "auto" }}>
+        <div id="cv-preview" style={{ height: "auto", overflow: "hidden" }}>
           <ActiveLayout cv={displayCV} photo={photo} onPhotoClick={() => fileRef.current?.click()} theme={activeTheme} lang={isEnglish ? "en" : "fr"} />
         </div>
       </div>
