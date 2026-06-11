@@ -65,17 +65,19 @@ export default function AdminPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      console.log("User email:", session?.user?.email);
+      console.log("User email:", user?.email);
 
-      if (session?.user?.email !== ADMIN_EMAIL) {
+      if (user?.email !== ADMIN_EMAIL) {
         router.replace("/");
         return;
       }
 
+      const { data: { session } } = await supabase.auth.getSession();
+
       const res = await fetch("/api/admin/stats", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
       });
 
       if (!res.ok) {
