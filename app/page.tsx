@@ -560,7 +560,7 @@ export default function HomePage() {
       // auth unavailable — site stays functional without login
     }
 
-    // Fetch community CV count
+    // Fetch community CV count - v2
     (async () => {
       try {
         const { data } = await supabase.from("stats").select("value").eq("key", "cv_generated").single();
