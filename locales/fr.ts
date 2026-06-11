@@ -25,6 +25,7 @@ export const fr = {
   stat1_label: "Pour créer votre CV",
   stat2_label: "Thèmes disponibles",
   stat3_label: "Gratuit, sans pub",
+  community_label: "CV créés par notre communauté",
 
   // --- Landing: before/after ---
   ba_tagline: "Transformation",

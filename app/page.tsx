@@ -542,6 +542,7 @@ export default function HomePage() {
   const [themeSelectCat,  setThemeSelectCat]  = useState<Cat>("moderne");
   const [splashDone,      setSplashDone]      = useState(false);
   const [mobileMenuOpen,  setMobileMenuOpen]  = useState(false);
+  const [cvCount,         setCvCount]         = useState<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -558,6 +559,18 @@ export default function HomePage() {
     } catch {
       // auth unavailable — site stays functional without login
     }
+
+    // Fetch community CV count
+    supabase.from("stats").select("value").eq("key", "cv_generated").single()
+      .then(({ data }) => { if (data) setCvCount(data.value as number); })
+      .catch(() => {});
+
+    // Track page visit (once per session)
+    if (!sessionStorage.getItem("visit_tracked")) {
+      sessionStorage.setItem("visit_tracked", "1");
+      supabase.from("page_views").insert({}).catch(() => {});
+    }
+
     return () => { try { subscription?.unsubscribe(); } catch {} };
   }, []);
 
@@ -747,6 +760,18 @@ export default function HomePage() {
             <StatCounter end={3}   suffix=" min" label={t.stat1_label} />
             <StatCounter end={70}  suffix=""     label={t.stat2_label} />
             <StatCounter end={100} suffix="%"    label={t.stat3_label} />
+          </div>
+          <div className="border-t border-gray-100 py-3 text-center">
+            {cvCount !== null ? (
+              <span className="text-sm font-semibold text-gray-600">
+                <span className="font-black" style={{ color: "#1B3CC1" }}>
+                  {cvCount.toLocaleString("fr-FR")}
+                </span>
+                {" "}{t.community_label}
+              </span>
+            ) : (
+              <span className="text-sm text-gray-300">— {t.community_label}</span>
+            )}
           </div>
         </section>
 

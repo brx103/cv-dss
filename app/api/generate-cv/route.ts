@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { CVData } from "@/types/cv";
+import { createAdminClient } from "@/lib/supabase-server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,6 +56,22 @@ Ne modifie aucun autre champ. N'ajoute aucun texte en dehors du JSON.`;
         return enrichedExp ? { ...exp, description: enrichedExp.description } : exp;
       }),
     };
+
+    // Increment CV counter (non-blocking)
+    try {
+      const admin = createAdminClient();
+      const { data: current } = await admin
+        .from("stats")
+        .select("value")
+        .eq("key", "cv_generated")
+        .single();
+      if (current) {
+        await admin
+          .from("stats")
+          .update({ value: (current.value as number) + 1 })
+          .eq("key", "cv_generated");
+      }
+    } catch { /* counter failure is non-critical */ }
 
     return NextResponse.json(enrichedCV);
   } catch (error) {

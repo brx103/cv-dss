@@ -27,6 +27,7 @@ export const en: Translations = {
   stat1_label: "To create your CV",
   stat2_label: "Available templates",
   stat3_label: "Free, no ads",
+  community_label: "CVs created by our community",
 
   // --- Landing: before/after ---
   ba_tagline: "Transformation",
