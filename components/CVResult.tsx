@@ -71,13 +71,14 @@ const ILink = () => (<svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" st
 
 /* ─── PhotoButton ─────────────────────────────────────────────────────────── */
 
-function PhotoButton({ photo, onClick, size, border, placeholder }: {
+function PhotoButton({ photo, onClick, size, border }: {
   photo: string | null; onClick: () => void; size: string; border: string; placeholder?: string;
 }) {
+  if (!photo) return null;
   return (
     <button type="button" onClick={onClick} className="relative group focus:outline-none flex-shrink-0 rounded-full">
       <div className={`${size} rounded-full overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105`} style={{ border }}>
-        {photo ? <img src={photo} alt="" className="w-full h-full object-cover" /> : <IUser c={placeholder} />}
+        <img src={photo} alt="" className="w-full h-full object-cover" />
       </div>
       <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
         <span className="text-[9px] font-bold tracking-widest" style={{ color: "#ffffff" }}>PHOTO</span>
@@ -143,8 +144,7 @@ function LayoutSidebar({ cv, photo, onPhotoClick, theme, lang }: LP) {
     <div className="flex flex-col sm:flex-row print:flex-row rounded-2xl overflow-hidden shadow-2xl" style={{ border:`1px solid ${c.border}` }}>
       <div className="w-full sm:w-56 print:w-56 flex-shrink-0 flex flex-col p-5 sm:p-7 gap-5 sm:gap-6" style={{ background: c.sidebar }}>
         <div className="flex flex-col items-center gap-2 pt-1">
-          <PhotoButton photo={photo} onClick={onPhotoClick} size="w-24 h-24" border={`3px solid ${c.accent}50`} placeholder="rgba(255,255,255,0.2)" />
-          {!photo && <p className="text-[10px] text-center" style={{ color: c.sidebarSub }}>{l.addPhoto}</p>}
+          <PhotoButton photo={photo} onClick={onPhotoClick} size="w-24 h-24" border={`3px solid ${c.accent}50`} />
         </div>
         <SepLine type={sep} color={`${c.sidebarText}20`} />
         <div>
@@ -829,16 +829,72 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
   const [isTranslating, setIsTranslating] = useState(false);
   const [translatedCV,  setTranslatedCV]  = useState<CVData | null>(null);
   const [isEnglish,     setIsEnglish]     = useState(false);
+  const [pdfLoading,    setPdfLoading]    = useState(false);
 
-  const printCV = useCallback(() => {
-    const cleanup = () => {
-      document.body.classList.remove("printing");
-      window.removeEventListener("afterprint", cleanup);
-    };
-    window.addEventListener("afterprint", cleanup);
-    document.body.classList.add("printing");
-    window.print();
-  }, []);
+  const downloadPDF = useCallback(async () => {
+    const el = document.getElementById("cv-preview");
+    if (!el) return;
+    setPdfLoading(true);
+    try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+
+      // Clone + resolve all computed colors to rgb (corrige oklch/oklab de Tailwind 4)
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.cssText = `position:absolute;left:-9999px;top:0;width:${el.offsetWidth}px;height:auto`;
+      document.body.appendChild(clone);
+      [clone, ...Array.from(clone.querySelectorAll<HTMLElement>("*"))].forEach(node => {
+        const cs = window.getComputedStyle(node);
+        node.style.color           = cs.color;
+        node.style.backgroundColor = cs.backgroundColor;
+        node.style.borderColor     = cs.borderColor;
+      });
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
+      document.body.removeChild(clone);
+
+      const pdf   = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pdfW  = 210;
+      const pdfH  = 297;
+      const ratio = canvas.height / canvas.width;
+      const totalH = pdfW * ratio;
+
+      if (totalH <= pdfH) {
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, pdfW, totalH);
+      } else {
+        const pageCanvas = document.createElement("canvas");
+        const ctx        = pageCanvas.getContext("2d")!;
+        pageCanvas.width = canvas.width;
+        const pageHpx    = Math.round(canvas.width * (pdfH / pdfW));
+        let y = 0, first = true;
+        while (y < canvas.height) {
+          if (!first) pdf.addPage();
+          const sliceH = Math.min(pageHpx, canvas.height - y);
+          pageCanvas.height = sliceH;
+          ctx.clearRect(0, 0, pageCanvas.width, sliceH);
+          ctx.drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+          pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, pdfW, (sliceH / canvas.width) * pdfW);
+          y += pageHpx;
+          first = false;
+        }
+      }
+
+      const name = [cv.prenom, cv.nom].filter(Boolean).join("-") || "CV";
+      pdf.save(`${name}.pdf`);
+    } catch (err) {
+      console.error("Erreur PDF:", err);
+    } finally {
+      setPdfLoading(false);
+    }
+  }, [cv]);
 
   const translateCV = useCallback(async () => {
     if (translatedCV) { setIsEnglish(true); return; }
@@ -873,6 +929,15 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" />
           </svg>
           Modifier
+        </button>
+
+        {/* Photo button */}
+        <button type="button" onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:border-gray-400 hover:text-gray-900 transition-all">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          {photo ? "Changer la photo" : "Ajouter une photo"}
         </button>
 
         {/* Translate toggle */}
@@ -912,13 +977,25 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
 
         {/* PDF button — pushed right */}
         <div className="ml-auto">
-          <button type="button" onClick={printCV}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.03] hover:opacity-90"
+          <button type="button" onClick={downloadPDF} disabled={pdfLoading}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.03] hover:opacity-90 disabled:opacity-60 disabled:cursor-wait disabled:scale-100"
             style={{ background:"linear-gradient(135deg,#6366f1,#a855f7)" }}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h4a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-            </svg>
-            Télécharger PDF
+            {pdfLoading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" style={{ opacity:0.25 }} />
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" style={{ opacity:0.75 }} />
+                </svg>
+                Génération…
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h4a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                </svg>
+                Télécharger PDF
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -982,8 +1059,8 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
       </a>
 
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
-      <div id="cv-print-zone" className="overflow-x-hidden">
-        <div id="cv-preview">
+      <div className="overflow-x-hidden">
+        <div id="cv-preview" style={{ height: "auto" }}>
           <ActiveLayout cv={displayCV} photo={photo} onPhotoClick={() => fileRef.current?.click()} theme={activeTheme} lang={isEnglish ? "en" : "fr"} />
         </div>
       </div>
