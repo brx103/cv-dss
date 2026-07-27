@@ -87,6 +87,20 @@ function PhotoButton({ photo, onClick, size, border }: {
   );
 }
 
+/* ─── Availability Badge ─────────────────────────────────────────────────── */
+
+function AvailabilityBadge() {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide whitespace-nowrap"
+      style={{ background: "#DCFCE7", color: "#15803D" }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#22C55E" }} />
+      Disponible immédiatement
+    </span>
+  );
+}
+
 /* ─── Separator Component ─────────────────────────────────────────────────── */
 
 function SepLine({ type, color }: { type: Sep; color: string }) {
@@ -182,6 +196,7 @@ function LayoutSidebar({ cv, photo, onPhotoClick, theme, lang }: LP) {
             {cv.prenom} <span className="font-light" style={{ color:c.accent }}>{cv.nom}</span>
           </h2>
           {cv.titre && <p className="text-sm font-semibold mt-1 tracking-wide" style={{ color:c.accent }}>{cv.titre}</p>}
+          {cv.disponibilite === "Immédiatement" && <div className="mt-2"><AvailabilityBadge /></div>}
           <div className="mt-3"><SepLine type={sep} color={c.border} /></div>
         </div>
         {cv.resume && (
@@ -248,6 +263,7 @@ function LayoutHeader({ cv, photo, onPhotoClick, theme, lang }: LP) {
             {cv.prenom} <span className="font-thin" style={{ color:c.accent }}>{cv.nom.toUpperCase()}</span>
           </h2>
           {cv.titre && <p className="text-sm italic mt-2 font-medium" style={{ color:c.accent }}>{cv.titre}</p>}
+          {cv.disponibilite === "Immédiatement" && <div className="mt-2"><AvailabilityBadge /></div>}
           <div className="mt-3 h-px w-20" style={{ background:`${c.accent}50` }} />
           <div className="flex flex-wrap gap-x-5 gap-y-1 mt-3">
             {cv.email && <span className="flex items-center gap-1.5 text-[11px]" style={{ color:c.sidebarSub }}><IEmail />{cv.email}</span>}
@@ -355,6 +371,7 @@ function LayoutGeometric({ cv, photo, onPhotoClick, theme, lang }: LP) {
             <h2 className="text-[2rem] sm:text-[3.2rem] print:text-[3.2rem] font-black leading-none tracking-tight" style={{ color:c.sidebarText }}>{cv.prenom}</h2>
             <h2 className="text-[2rem] sm:text-[3.2rem] print:text-[3.2rem] font-thin leading-none tracking-widest -mt-1" style={{ color:c.accent }}>{cv.nom.toUpperCase()}</h2>
             {cv.titre && <p className="text-sm italic font-medium mt-2" style={{ color:`${c.sidebarText}80` }}>{cv.titre}</p>}
+            {cv.disponibilite === "Immédiatement" && <div className="mt-2"><AvailabilityBadge /></div>}
             <div className="mt-3 h-[3px] w-10 rounded-full" style={{ background:c.accent }} />
           </div>
           <div className="relative flex-shrink-0 mb-2">
@@ -459,6 +476,7 @@ function LayoutMinimal({ cv, photo, onPhotoClick, theme, lang }: LP) {
             <h2 className="text-[1.7rem] sm:text-[2.6rem] print:text-[2.6rem] font-thin leading-none tracking-widest" style={{ color:c.text }}>{cv.prenom.toUpperCase()}</h2>
             <h2 className="text-[1.7rem] sm:text-[2.6rem] print:text-[2.6rem] font-black leading-none tracking-tight -mt-1" style={{ color:c.text }}>{cv.nom.toUpperCase()}</h2>
             {cv.titre && <p className="text-xs italic mt-3 tracking-wider" style={{ color:c.sub }}>{cv.titre}</p>}
+            {cv.disponibilite === "Immédiatement" && <div className="mt-2"><AvailabilityBadge /></div>}
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4">
               {cv.email && <span className="text-[11px]" style={{ color:c.sub }}>{cv.email}</span>}
               {cv.telephone && <span className="text-[11px]" style={{ color:c.sub }}>{cv.telephone}</span>}
@@ -558,6 +576,7 @@ function LayoutStrip({ cv, photo, onPhotoClick, theme, lang }: LP) {
               {cv.prenom} <span className="font-light" style={{ color:c.accent }}>{cv.nom}</span>
             </h2>
             {cv.titre && <p className="text-sm font-semibold mt-1.5 tracking-wide" style={{ color:c.accent }}>{cv.titre}</p>}
+            {cv.disponibilite === "Immédiatement" && <div className="mt-2"><AvailabilityBadge /></div>}
           </div>
           <PhotoButton photo={photo} onClick={onPhotoClick} size="w-20 h-20" border={`3px solid ${c.accent}50`} placeholder="text-gray-300" />
         </div>
@@ -657,6 +676,7 @@ function LayoutTimeline({ cv, photo, onPhotoClick, theme, lang }: LP) {
             {cv.prenom} <span className="font-thin" style={{ color:c.accent }}>{cv.nom}</span>
           </h2>
           {cv.titre && <p className="text-sm mt-1.5 font-medium" style={{ color:`${c.accent}cc` }}>{cv.titre}</p>}
+          {cv.disponibilite === "Immédiatement" && <div className="mt-2"><AvailabilityBadge /></div>}
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
             {cv.email && <span className="flex items-center gap-1.5 text-[11px]" style={{ color:c.sidebarSub }}><IEmail />{cv.email}</span>}
             {cv.telephone && <span className="flex items-center gap-1.5 text-[11px]" style={{ color:c.sidebarSub }}><IPhone />{cv.telephone}</span>}
@@ -841,9 +861,12 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
         import("jspdf"),
       ]);
 
+      // Hauteur réelle du contenu (scrollHeight, pas offsetHeight) pour éviter le surplus de blanc en bas du PDF
+      const captureHeight = el.scrollHeight;
+
       // Clone + resolve all computed colors to rgb (corrige oklch/oklab de Tailwind 4)
       const clone = el.cloneNode(true) as HTMLElement;
-      clone.style.cssText = `position:absolute;left:-9999px;top:0;width:${el.offsetWidth}px;height:auto`;
+      clone.style.cssText = `position:absolute;left:-9999px;top:0;width:${el.offsetWidth}px;height:${captureHeight}px;overflow:hidden`;
       document.body.appendChild(clone);
       [clone, ...Array.from(clone.querySelectorAll<HTMLElement>("*"))].forEach(node => {
         const cs = window.getComputedStyle(node);
@@ -858,6 +881,8 @@ export default function CVResult({ cv, onEdit, initialThemeId }: Props) {
         allowTaint: true,
         backgroundColor: "#ffffff",
         logging: false,
+        height: captureHeight,
+        windowHeight: captureHeight,
       });
       document.body.removeChild(clone);
 

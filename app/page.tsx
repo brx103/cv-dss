@@ -522,16 +522,8 @@ function HeroCVPreview() {
 
 export default function HomePage() {
   const { t } = useLang();
-  const STEPS = [
-    { id: "infos",       label: t.steps[0] },
-    { id: "experiences", label: t.steps[1] },
-    { id: "formations",  label: t.steps[2] },
-    { id: "competences", label: t.steps[3] },
-  ];
 
   const [cvData,          setCVData]          = useState<CVData>(defaultCVData);
-  const [currentStep,     setCurrentStep]     = useState(0);
-  const [enrichedCV,      setEnrichedCV]      = useState<CVData | null>(null);
   const [isLoading,       setIsLoading]       = useState(false);
   const [error,           setError]           = useState<string | null>(null);
   const [user,            setUser]            = useState<User | null>(null);
@@ -577,16 +569,14 @@ export default function HomePage() {
     return () => { try { subscription?.unsubscribe(); } catch {} };
   }, []);
 
-  useEffect(() => { setMobileMenuOpen(false); }, [showThemeSelect, showForm, enrichedCV]);
+  useEffect(() => { setMobileMenuOpen(false); }, [showThemeSelect, showForm]);
 
   if (!splashDone) return <SplashScreen onDone={() => setSplashDone(true)} />;
 
   const updateCVData = (partial: Partial<CVData>) =>
     setCVData(prev => ({ ...prev, ...partial }));
 
-  const isLastStep = currentStep === STEPS.length - 1;
-
-  const handleSubmit = async () => {
+  const handleEnrich = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -599,7 +589,7 @@ export default function HomePage() {
         const data = await res.json();
         throw new Error(data.error ?? "Erreur serveur");
       }
-      setEnrichedCV(await res.json());
+      setCVData(await res.json());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
@@ -608,8 +598,6 @@ export default function HomePage() {
   };
 
   const goToThemeSelect = () => {
-    setCurrentStep(0);
-    setEnrichedCV(null);
     setError(null);
     setShowThemeSelect(true);
     setShowForm(false);
@@ -623,14 +611,13 @@ export default function HomePage() {
 
   const backToThemeSelect = () => {
     setShowForm(false);
-    setEnrichedCV(null);
     setShowThemeSelect(true);
   };
 
   /* ════════════════════════════════════════════════════════════════
      LANDING PAGE
   ════════════════════════════════════════════════════════════════ */
-  if (!showThemeSelect && !showForm && !enrichedCV) {
+  if (!showThemeSelect && !showForm) {
     return (
       <div className="min-h-screen bg-white font-sans">
         {/* Header */}
@@ -1127,46 +1114,46 @@ export default function HomePage() {
   }
 
   /* ════════════════════════════════════════════════════════════════
-     FORMULAIRE 4 ÉTAPES + RÉSULTAT
+     ÉDITEUR SPLIT-SCREEN : formulaire (gauche) + aperçu live (droite)
   ════════════════════════════════════════════════════════════════ */
-  return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 40%,#FAF5FF 100%)" }}>
+  const sectionCardClass = "bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8";
+  const sectionCardShadow = { boxShadow: "0 8px 40px rgba(99,102,241,0.10), 0 2px 8px rgba(0,0,0,0.04)" };
 
-      <header className="border-b border-indigo-100/60 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button type="button" onClick={enrichedCV ? () => { setEnrichedCV(null); setCurrentStep(0); } : backToThemeSelect}
-            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors">
+  return (
+    <div className="flex flex-col lg:h-screen lg:overflow-hidden" style={{ background: "linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 40%,#FAF5FF 100%)" }}>
+
+      <header className="border-b border-indigo-100/60 bg-white/80 backdrop-blur-sm flex-shrink-0 sticky top-0 z-10 lg:static">
+        <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <button type="button" onClick={backToThemeSelect}
+            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0">
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
               <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
-            {enrichedCV ? t.form_back_result : t.form_back}
+            {t.form_back}
           </button>
 
-          <span className="text-sm font-black tracking-tight text-gray-900">
-            CV<span style={{ color: "#1B3CC1" }}>-DSS</span>
-          </span>
-
-          {/* Desktop */}
-          <div className="hidden sm:flex items-center gap-2">
-            <LangToggle />
-            {!enrichedCV && (
-              <>
-                <div className="flex gap-1">
-                  <div className="w-6 h-1.5 rounded-full" style={{ background: "#1B3CC1" }} />
-                  <div className="w-6 h-1.5 rounded-full" style={{ background: "#1B3CC1" }} />
-                </div>
-                <span className="text-xs font-semibold text-indigo-400">{currentStep + 1} / {STEPS.length}</span>
-              </>
-            )}
+          <div className="hidden md:flex items-center gap-2 min-w-0">
+            <div className="w-3.5 h-3.5 rounded-full shadow-sm flex-shrink-0"
+              style={{ background: THEMES.find(th => th.id === selectedThemeId)?.swatch, border: "2px solid rgba(0,0,0,0.1)" }} />
+            <span className="text-xs text-gray-500 font-medium truncate">
+              {t.theme_selected} : <span className="font-bold text-gray-700">{THEMES.find(th => th.id === selectedThemeId)?.name}</span>
+            </span>
+            <button type="button" onClick={backToThemeSelect}
+              className="text-[11px] font-bold underline underline-offset-2 text-indigo-500 hover:text-indigo-700 transition-colors flex-shrink-0">
+              {t.theme_change}
+            </button>
           </div>
-          {/* Mobile: show step only, hamburger for lang */}
-          <div className="flex sm:hidden items-center gap-2">
-            {!enrichedCV && (
-              <span className="text-xs font-semibold text-indigo-400">{currentStep + 1} / {STEPS.length}</span>
-            )}
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="hidden sm:block"><LangToggle /></div>
+            <button type="button" onClick={handleEnrich} disabled={isLoading}
+              className="px-4 py-2 text-xs sm:text-sm font-bold text-white rounded-xl transition-all duration-200 hover:scale-[1.03] hover:shadow-lg active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 whitespace-nowrap"
+              style={{ background:"linear-gradient(135deg,#6366f1,#a855f7)", boxShadow:"0 4px 16px rgba(99,102,241,0.3)" }}>
+              {isLoading ? t.generating : t.generate}
+            </button>
             <button
               type="button"
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+              className="sm:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
               onClick={() => setMobileMenuOpen(o => !o)}
               aria-label="Menu"
             >
@@ -1188,97 +1175,55 @@ export default function HomePage() {
             <LangToggle />
           </div>
         )}
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 py-10">
-
-        {!enrichedCV && (
-          <div className="flex items-center gap-2 mb-6 px-1">
-            <div className="w-4 h-4 rounded-full shadow-sm flex-shrink-0"
-              style={{ background: THEMES.find(th => th.id === selectedThemeId)?.swatch, border: "2px solid rgba(0,0,0,0.1)" }} />
-            <span className="text-xs text-gray-500 font-medium">
-              {t.theme_selected} : <span className="font-bold text-gray-700">{THEMES.find(th => th.id === selectedThemeId)?.name}</span>
-            </span>
-            <button type="button" onClick={backToThemeSelect}
-              className="ml-auto text-[11px] font-bold underline underline-offset-2 text-indigo-500 hover:text-indigo-700 transition-colors">
-              {t.theme_change}
-            </button>
+        {error && (
+          <div className="max-w-[1600px] mx-auto px-4 pb-3">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">{error}</div>
           </div>
         )}
+      </header>
 
-        {enrichedCV ? (
+      <div className="flex-1 flex flex-col lg:flex-row lg:min-h-0 lg:overflow-hidden">
+
+        {/* ── Colonne gauche : formulaire, toutes sections empilées et scrollables ── */}
+        <div className="w-full lg:w-1/2 lg:min-h-0 lg:overflow-y-auto px-4 sm:px-8 py-8 space-y-8">
+          <section>
+            <h2 className="text-xs font-black uppercase tracking-widest text-indigo-500 mb-3 px-1">{t.steps[0]}</h2>
+            <div className={sectionCardClass} style={sectionCardShadow}>
+              <InfoPersonnelles data={cvData} onChange={updateCVData} />
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xs font-black uppercase tracking-widest text-indigo-500 mb-3 px-1">{t.steps[1]}</h2>
+            <div className={sectionCardClass} style={sectionCardShadow}>
+              <Experiences data={cvData} onChange={updateCVData} />
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xs font-black uppercase tracking-widest text-indigo-500 mb-3 px-1">{t.steps[2]}</h2>
+            <div className={sectionCardClass} style={sectionCardShadow}>
+              <Formations data={cvData} onChange={updateCVData} />
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xs font-black uppercase tracking-widest text-indigo-500 mb-3 px-1">{t.steps[3]}</h2>
+            <div className={sectionCardClass} style={sectionCardShadow}>
+              <Competences data={cvData} onChange={updateCVData} />
+            </div>
+          </section>
+        </div>
+
+        {/* ── Colonne droite : aperçu du CV, live, sticky sur desktop ── */}
+        <div className="w-full lg:w-1/2 lg:min-h-0 lg:overflow-y-auto px-4 sm:px-8 py-8 lg:border-l lg:border-indigo-100/60">
           <CVResult
-            cv={enrichedCV}
+            cv={cvData}
             initialThemeId={selectedThemeId}
-            onEdit={(data) => { setCVData(data); setCurrentStep(0); setEnrichedCV(null); }}
+            onEdit={(data) => setCVData(data)}
           />
-        ) : (
-          <>
-            {/* Stepper */}
-            <div className="mb-8">
-              <div className="flex items-start justify-between relative">
-                <div className="absolute top-4 left-0 right-0 h-px bg-indigo-100 z-0 mx-8" />
-                {STEPS.map((step, index) => (
-                  <button key={step.id} type="button" onClick={() => setCurrentStep(index)}
-                    className="relative z-10 flex flex-col items-center gap-2 focus:outline-none">
-                    <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                      index < currentStep
-                        ? "text-white shadow-md shadow-indigo-300"
-                        : index === currentStep
-                        ? "bg-white text-indigo-600 border-2 border-indigo-500 shadow-lg shadow-indigo-200"
-                        : "bg-white text-gray-300 border-2 border-gray-200"
-                    }`}
-                      style={index < currentStep ? { background: "linear-gradient(135deg,#6366f1,#a855f7)" } : {}}>
-                      {index < currentStep ? "✓" : index + 1}
-                    </span>
-                    <span className={`text-[11px] font-semibold hidden sm:block transition-colors ${
-                      index <= currentStep ? "text-indigo-600" : "text-gray-300"
-                    }`}>{step.label}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-5 h-1.5 bg-indigo-100 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-500"
-                  style={{ width:`${((currentStep + 1) / STEPS.length) * 100}%`, background:"linear-gradient(90deg,#6366f1,#a855f7)" }} />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-6"
-              style={{ boxShadow: "0 8px 40px rgba(99,102,241,0.10), 0 2px 8px rgba(0,0,0,0.04)" }}>
-              {currentStep === 0 && <InfoPersonnelles data={cvData} onChange={updateCVData} />}
-              {currentStep === 1 && <Experiences     data={cvData} onChange={updateCVData} />}
-              {currentStep === 2 && <Formations      data={cvData} onChange={updateCVData} />}
-              {currentStep === 3 && <Competences     data={cvData} onChange={updateCVData} />}
-
-              <div className="flex items-center justify-between pt-5 border-t border-gray-100">
-                <button type="button" onClick={() => setCurrentStep(s => Math.max(0, s - 1))}
-                  disabled={currentStep === 0}
-                  className="px-5 py-2.5 text-sm font-semibold text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-                  {t.prev}
-                </button>
-
-                {isLastStep ? (
-                  <button type="button" onClick={handleSubmit} disabled={isLoading}
-                    className="px-7 py-2.5 text-sm font-bold text-white rounded-xl transition-all duration-200 hover:scale-[1.03] hover:shadow-lg active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    style={{ background:"linear-gradient(135deg,#6366f1,#a855f7)", boxShadow:"0 4px 16px rgba(99,102,241,0.35)" }}>
-                    {isLoading ? t.generating : t.generate}
-                  </button>
-                ) : (
-                  <button type="button" onClick={() => setCurrentStep(s => Math.min(STEPS.length - 1, s + 1))}
-                    className="px-7 py-2.5 text-sm font-bold text-white rounded-xl transition-all duration-200 hover:scale-[1.03] hover:shadow-lg active:scale-100"
-                    style={{ background:"linear-gradient(135deg,#6366f1,#a855f7)", boxShadow:"0 4px 16px rgba(99,102,241,0.3)" }}>
-                    {t.next}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-700">{error}</div>
-            )}
-          </>
-        )}
-      </main>
+        </div>
+      </div>
     </div>
   );
 }
